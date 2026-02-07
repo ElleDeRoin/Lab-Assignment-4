@@ -1,0 +1,111 @@
+using UnityEngine;
+using System.Collections.Generic;
+
+//DnD Calculator
+public class DnDCalc : MonoBehaviour
+{
+    //Variables (changed in inspector)
+    public string characterName = "Sir John";
+    public int characterLevel = 3;
+    public int characterCon = 21;
+    public bool isRolled = false;
+    public bool isTough = true;
+    public bool isStout = false;
+
+    //Dropdowns for class and race
+    public CharacterClass characterClass;
+    public CharacterRace characterRace;
+
+    //Class hit dice
+    Dictionary<CharacterClass, int> classHitDie = new Dictionary<CharacterClass, int>()
+    {
+        { CharacterClass.Artificer, 8 },
+        { CharacterClass.Barbarian, 12 },
+        { CharacterClass.Bard, 8 },
+        { CharacterClass.Cleric, 8 },
+        { CharacterClass.Druid, 8 },
+        { CharacterClass.Fighter, 10 },
+        { CharacterClass.Monk, 8 },
+        { CharacterClass.Paladin, 10 },
+        { CharacterClass.Ranger, 10 },
+        { CharacterClass.Rogue, 8 },
+        { CharacterClass.Sorcerer, 6 },
+        { CharacterClass.Warlock, 8 },
+        { CharacterClass.Wizard, 6 }
+    };
+
+    //Race bonuses
+    Dictionary<CharacterRace, int> raceBonus = new Dictionary<CharacterRace, int>()
+    {
+        { CharacterRace.Dwarf, 2 },
+        { CharacterRace.Orc, 1 },
+        { CharacterRace.Goliath, 1 },
+        { CharacterRace.Human, 0 },
+        { CharacterRace.Elf, 0 },
+        { CharacterRace.Halfling, 0 },
+        { CharacterRace.Tiefling, 0 },
+        { CharacterRace.Dragonborn, 0 },
+        { CharacterRace.Gnome, 0 },
+        { CharacterRace.HalfElf, 0 }
+    };
+
+    //Run Calculator
+    void Start()
+    {
+        int totalHP = CalculateHP();
+        Debug.Log($"{characterName} has {totalHP} HP.");
+    }
+
+    //Check constitution
+    int GetConModifier(int conScore)
+    {
+        return (conScore - 10) / 2;
+    }
+
+    //Calculate if rolled or averaged
+    int RollHitDie(int hitDie, bool rolled)
+    {
+        if (rolled)
+            return Random.Range(1, hitDie + 1);
+        else
+            return (hitDie / 2) + 1;
+    }
+
+    //Calculate HP with modifiers
+    int CalculateHP()
+    {
+        int hitDie = classHitDie[characterClass];
+        int conMod = GetConModifier(characterCon);
+        int totalHP = 0;
+
+        for (int level = 1; level <= characterLevel; level++)
+        {
+            totalHP += RollHitDie(hitDie, isRolled) + conMod;
+
+            if (raceBonus.ContainsKey(characterRace))
+                totalHP += raceBonus[characterRace];
+
+            if (isTough)
+                totalHP += 2;
+            if (isStout)
+                totalHP += 1;
+        }
+
+        return totalHP;
+    }
+
+    // Dropdown for classes
+    public enum CharacterClass
+    {
+        Artificer, Barbarian, Bard, Cleric, Druid,
+        Fighter, Monk, Paladin, Ranger, Rogue,
+        Sorcerer, Warlock, Wizard
+    }
+
+    //Dropdown for races
+    public enum CharacterRace
+    {
+        Dwarf, Orc, Goliath, Human, Elf,
+        Halfling, Tiefling, Dragonborn, Gnome, HalfElf
+    }
+}
